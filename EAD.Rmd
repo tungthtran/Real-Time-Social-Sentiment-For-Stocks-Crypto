@@ -1,0 +1,197 @@
+---
+title: "Exploratory Data Analysis"
+author: "Grizzlies"
+output: pdf_document
+date: "2022-11-07"
+---
+
+## I. Introduction
+  The purpose of this study is to investigate how the sentiments (people's general feelings and emotions), which are measured from Twitter, StockTwits, and Reddit, can affect the prices, volumes, and market caps of different cryptocurrencies and stocks, or tickers. We can also learn about the fluctuation of the changes in sentiment scores as well as ticker prices over time. With the information in hand, we expect to find a correlation between sentiment scores and other information about different tickers like prices or volumes, which can help leverage one's trading experience and help traders make profits with accurate data.
+
+## II. Background
+  Using Utradea's Social Sentiment data, we can identify and track popular stocks and cryptocurrencies on social media platform like Twitter, StockTwits, and Reddit. The sentiment scores are inferred from datapoints for stocks and cryptocurrencies mentioned on those social networks, for example posts, likes and comments. Data is sourced and provided over a 24-hour or 72-hour period, which keeps track of the change in price and volume over the period. The change in posts, comments, and impressions over that given time period can also be used to identify hot stocks or cryptocurrencies, which can lead to high sentiment scores. 
+
+  The units of observations are tickers (stocks/cryptocurrencies). In order to understand the EAD, one only need to understand about tickers, which have price, volume, market cap, and sentiments, which are people's general feelings and emotions towards a specific ticker. The list of variables that are important for the analysis is as belows:
+
++ ticker: the ticker code
+
++ sentiment: the sentiment score of the ticker
+
++ lastSentiment: the last sentiment score measured of the ticker
+
++ sentimentChange: the sentiment score change in percentage
+
++ price: the price of the ticker
+
++ previousClose: the closing price of the ticker previously measured
+
++ change: the change in price
+
++ changePercent: the price change in percentage
+
++ volume: the volume of the ticker
+
++ previousVolume: the volume of the ticker previously measured
+
++ marketCap: the market cap of the ticker
+
+## III. Data Wrangling
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+bullish_data <- read_csv("social_sentiment_twitter_chginsentiment_bullish_03-16-2022.csv")
+bearish_data <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-16-2022.csv")
+
+# binding both data for bullish and bearish tickers together
+data <- rbind(bullish_data, bearish_data)
+
+data <- data %>%
+  # filter out all dummy data
+  filter(lastSentiment > 0) %>%
+  rename(sentimentChangePercent="sentimentChange", 
+         priceChange="change", 
+         priceChangePercent="changePercent") %>%
+  # adding new variable volumeChangePercent
+  mutate(priceChangePercent = priceChangePercent * 100, 
+         volumeChangePercent= (volume - previousVolume) / previousVolume * 100) 
+
+glimpse(data)
+```
+
+  We introduce new variable volumeChangePercent, which keeps track of the change in volume in percentage for better reference. For readability, we also change some variables name, for example change and changePercentage, to distinguish from other changes. For priceChangePercentage column, we multiply all values by 100 to match the data format of other percentage changes.
+
+## IV. Exploratory Analysis
+A histogram of all featured variables in the datasets:
+```{r}
+library(purrr)
+library(tidyr)
+data %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram()
+```
+
+  The pairs plot of the variables that we use, since these are all important features as discussed in section II. They are sentiment, price, volume, market cap of each ticker together with their changes in percentage.
+```{r}
+pairs(data[,c("sentiment","sentimentChangePercent","price", "priceChangePercent", 
+              "volume", "volumeChangePercent", "marketCap")], 
+      col="blue",  
+      labels = c('Sentiment Score', 'Change in sentiment', 'Price', "Change in price", 
+                 "Volume", "Change in Volume", "Market Cap"), 
+      main="Important variables")
+```
+
+  Look at the correlations between the variables:
+```{r}
+res = cor(data[,c("sentiment","sentimentChangePercent","price", "priceChangePercent", 
+              "volume", "volumeChangePercent", "marketCap")], use="complete.obs")
+res
+```
+
+
+  Find out if there are missing values:
+```{r}
+sapply(data, function(x) sum(is.na(x)))
+```
+
+```{r}
+library(corrplot)
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+
+```{r}
+plotdata <- data %>%
+  filter(sentimentChangePercent < 500)
+ggplot(plotdata, aes(x=sentimentChangePercent, y = priceChangePercent)) + 
+  geom_point() + geom_smooth() + 
+  labs(
+    title = "Change in sentiment vs Change in price",
+    x = "Change in sentiment score (%)",
+    y = "Change in price (%)"
+  )     
+```
+
+```{r}
+plotdata1 <- data %>%
+  filter(sentimentChangePercent < 500)
+ggplot(plotdata1, aes(x=sentimentChangePercent, y = volumeChangePercent)) + 
+  geom_point() + geom_smooth() + 
+  labs(
+    title = "Change in sentiment vs Change in volume",
+    x = "Change in sentiment score (%)",
+    y = "Change in volume (%)"
+  )     
+```
+
+```{r}
+plotdata1 <- data %>%
+  filter(price < 200)
+ggplot(plotdata1, aes(x=price, y = priceChangePercent)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Price vs Change in price",
+    x = "Price",
+    y = "Change in price (%)"
+  )  
+```
+
+```{r}
+plotdata1 <- data %>%
+  filter(price < 200)
+ggplot(plotdata1, aes(x=sentiment, y = price)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Sentiment vs Price",
+    x = "Sentiement score",
+    y = "Price"
+  )  
+```
+```{r}
+ggplot(plotdata1, aes(x=sentiment, y = volume)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Sentiment vs Volume",
+    x = "Sentiement score",
+    y = "Volume"
+  )  
+```
+
+```{r}
+plotdata2 <- data %>%
+  filter(marketCap < 5000000000)
+ggplot(plotdata2, aes(x=marketCap, y = priceChangePercent)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Market cap vs Change in price",
+    x = "Market cap",
+    y = "Change in price (%)"
+  )
+```
+
+```{r}
+ggplot(plotdata2, aes(x=marketCap, y = sentiment)) + 
+  geom_point() + geom_smooth() + 
+  labs(
+    title = "Market cap vs Sentiment score",
+    x = "Market cap",
+    y = "Sentiment score"
+  )
+```
+
+```{r}
+plotdata3 <- data %>%
+  filter(marketCap < 5000000000, sentimentChangePercent < 500)
+ggplot(plotdata3, aes(x=marketCap, y = sentimentChangePercent)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Market cap vs Change in sentiment",
+    x = "Market cap",
+    y = "Change in sentiment (%)"
+  )
+```
+
