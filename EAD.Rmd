@@ -42,10 +42,12 @@ library(dplyr)
 library(ggplot2)
 
 bullish_data <- read_csv("social_sentiment_twitter_chginsentiment_bullish_03-16-2022.csv")
+bullish_data2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bullish_03-16-2022.csv")
 bearish_data <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-16-2022.csv")
+bearish_data2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bearish_03-16-2022.csv")
 
 # binding both data for bullish and bearish tickers together
-data <- rbind(bullish_data, bearish_data)
+data <- rbind(bullish_data, bearish_data, bullish_data2, bearish_data2)
 
 data <- data %>%
   # filter out all dummy data
@@ -57,6 +59,7 @@ data <- data %>%
   mutate(priceChangePercent = priceChangePercent * 100, 
          volumeChangePercent= (volume - previousVolume) / previousVolume * 100) 
 
+View(data)
 glimpse(data)
 ```
 
@@ -107,24 +110,24 @@ corrplot(res, type = "upper", order = "hclust",
 ```{r}
 plotdata <- data %>%
   filter(sentimentChangePercent < 500)
-ggplot(plotdata, aes(x=sentimentChangePercent, y = priceChangePercent)) + 
+ggplot(plotdata, aes(y=sentimentChangePercent, x = priceChangePercent)) + 
   geom_point() + geom_smooth() + 
   labs(
     title = "Change in sentiment vs Change in price",
-    x = "Change in sentiment score (%)",
-    y = "Change in price (%)"
+    y = "Change in sentiment score (%)",
+    x = "Change in price (%)"
   )     
 ```
 
 ```{r}
 plotdata1 <- data %>%
   filter(sentimentChangePercent < 500)
-ggplot(plotdata1, aes(x=sentimentChangePercent, y = volumeChangePercent)) + 
+ggplot(plotdata1, aes(y=sentimentChangePercent, x = volumeChangePercent)) + 
   geom_point() + geom_smooth() + 
   labs(
     title = "Change in sentiment vs Change in volume",
-    x = "Change in sentiment score (%)",
-    y = "Change in volume (%)"
+    y = "Change in sentiment score (%)",
+    x = "Change in volume (%)"
   )     
 ```
 
@@ -143,21 +146,21 @@ ggplot(plotdata1, aes(x=price, y = priceChangePercent)) +
 ```{r}
 plotdata1 <- data %>%
   filter(price < 200)
-ggplot(plotdata1, aes(x=sentiment, y = price)) + 
+ggplot(plotdata1, aes(y=sentiment, x = price)) + 
   geom_point() + geom_smooth() +
   labs(
     title = "Sentiment vs Price",
-    x = "Sentiement score",
-    y = "Price"
+    y = "Sentiement score",
+    x = "Price"
   )  
 ```
 ```{r}
-ggplot(plotdata1, aes(x=sentiment, y = volume)) + 
+ggplot(plotdata1, aes(y=sentiment, x = volume)) + 
   geom_point() + geom_smooth() +
   labs(
     title = "Sentiment vs Volume",
-    x = "Sentiement score",
-    y = "Volume"
+    y = "Sentiement score",
+    x = "Volume"
   )  
 ```
 
