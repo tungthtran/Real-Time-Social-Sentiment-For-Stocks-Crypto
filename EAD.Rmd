@@ -110,7 +110,23 @@ corrplot(res, type = "upper", order = "hclust",
 sapply(data, function(x) sum(is.na(x)))
 ```
 
-  The follow charts show correlation between each pair of tickers' unique features:  
+  The follow charts show correlation between each pair of tickers' unique features: 
+  
+```{r echo=FALSE, message = FALSE, warning=FALSE}
+plotdata1 <- data %>%
+  filter(price < 200)
+ggplot(plotdata1, aes(x=price, y = priceChangePercent)) + 
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Price vs Change in price",
+    x = "Price",
+    y = "Change in price (%)"
+  )  
+```  
+
+We firstly want to run a sanity check to make sure that the price level doesn't have any effect on the change in price. As shown in the plot, the smooth line of correlation is flat, and it means the price level doesn't have a direct effect of the change in price.
+  
+  
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata <- data %>%
   filter(sentimentChangePercent < 500)
@@ -122,6 +138,8 @@ ggplot(plotdata, aes(y=sentimentChangePercent, x = priceChangePercent)) +
     x = "Change in price (%)"
   )     
 ```
+
+We then want to examine the correlation of change in price and change in sentiment. We suppose that when price increases, people will have positive things to talk about the tickers, thus increasing the sentiment score. This will result in a positive slope. The plot also shows this trend in the range where most of the data points lie in. For the outliers, as they are scattered so it is harder to say if there is a trend for them.
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata1 <- data %>%
@@ -135,17 +153,7 @@ ggplot(plotdata1, aes(y=sentimentChangePercent, x = volumeChangePercent)) +
   )     
 ```
 
-```{r echo=FALSE, message = FALSE, warning=FALSE}
-plotdata1 <- data %>%
-  filter(price < 200)
-ggplot(plotdata1, aes(x=price, y = priceChangePercent)) + 
-  geom_point() + geom_smooth() +
-  labs(
-    title = "Price vs Change in price",
-    x = "Price",
-    y = "Change in price (%)"
-  )  
-```
+The same trend applies for the correlation of change in volume and the change in sentiment score. When the volume increases in the market, it will attract the the attention of the crowd and increase the sentiment score. This also results in a positive slope in the plot where there exist most of the data points.
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata1 <- data %>%
@@ -154,19 +162,25 @@ ggplot(plotdata1, aes(y=sentiment, x = price)) +
   geom_point() + geom_smooth() +
   labs(
     title = "Sentiment vs Price",
-    y = "Sentiement score",
+    y = "Sentiment score",
     x = "Price"
   )  
 ```
+
+We want to further discover more trends. We try to find out the correlation of price level and sentiment score, but the plot doesn't really say anything about it, as the smooth line is flat.
+
+
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 ggplot(plotdata1, aes(y=sentiment, x = volume)) + 
   geom_point() + geom_smooth() +
   labs(
     title = "Sentiment vs Volume",
-    y = "Sentiement score",
+    y = "Sentiment score",
     x = "Volume"
   )  
 ```
+
+This is the same for volume and sentiment score. An increase in volume doesn't reflect in any change in sentiment score, as the plot is also quite flat. There in a bit of a fluctuation where there are a lot of data points, but that is not enough to conclude whether there is a trend there.
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata2 <- data %>%
@@ -180,6 +194,8 @@ ggplot(plotdata2, aes(x=marketCap, y = priceChangePercent)) +
   )
 ```
 
+We want to also take into account the market cap. Seems like for tickers with higher market cap, people have better trust in them, and the price increases more. This results in a positive slope in the plot.
+
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 ggplot(plotdata2, aes(x=marketCap, y = sentiment)) + 
   geom_point() + geom_smooth() + 
@@ -189,6 +205,8 @@ ggplot(plotdata2, aes(x=marketCap, y = sentiment)) +
     y = "Sentiment score"
   )
 ```
+
+From the plot above, we suppose that the market cap is also proportional to the sentiment score. However, it is impossible to tell if that correlation is correct just by looking at the plot, as the slope goes up then down, then up again. On a bright side, the slope goes up in the range of small and large market cap, just goes down by a bit in the middle range.
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata3 <- data %>%
@@ -201,6 +219,8 @@ ggplot(plotdata3, aes(x=marketCap, y = sentimentChangePercent)) +
     y = "Change in sentiment (%)"
   )
 ```
+
+We finally examine the correlation of market cap and change in sentiment. We had a hypothesis that this would be a positive correlation. However, we are surprised that by looking at the plot, it is impossible to find any trend.
 
 ## V. Finished Analysis  
 
