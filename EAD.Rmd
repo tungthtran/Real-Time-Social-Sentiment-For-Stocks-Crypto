@@ -41,16 +41,25 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 
-bullish_data_twitter <- read_csv("social_sentiment_twitter_chginsentiment_bullish_03-16-2022.csv", show_col_types = FALSE)
-bullish_data_stocktwits <- read_csv("social_sentiment_stocktwits_chginsentiment_bullish_03-15-2022.csv", show_col_types = FALSE)
-bullish_data_stocktwits2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bullish_03-16-2022.csv", show_col_types = FALSE)
-bearish_data_twitter <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-15-2022.csv", show_col_types = FALSE)
-bearish_data_twitter2 <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-16-2022.csv", show_col_types = FALSE)
-bearish_data_stocktwits <- read_csv("social_sentiment_stocktwits_chginsentiment_bearish_03-15-2022.csv", show_col_types = FALSE)
-bearish_data_stocktwits2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bearish_03-16-2022.csv", show_col_types = FALSE)
+bullish_data_twitter <- read_csv("social_sentiment_twitter_chginsentiment_bullish_03-16-2022.csv", 
+                                 show_col_types = FALSE)
+bullish_data_stocktwits <- read_csv("social_sentiment_stocktwits_chginsentiment_bullish_03-15-2022.csv", 
+                                    show_col_types = FALSE)
+bullish_data_stocktwits2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bullish_03-16-2022.csv", 
+                                     show_col_types = FALSE)
+bearish_data_twitter <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-15-2022.csv", 
+                                 show_col_types = FALSE)
+bearish_data_twitter2 <- read_csv("social_sentiment_twitter_chginsentiment_bearish_03-16-2022.csv", 
+                                  show_col_types = FALSE)
+bearish_data_stocktwits <- read_csv("social_sentiment_stocktwits_chginsentiment_bearish_03-15-2022.csv", 
+                                    show_col_types = FALSE)
+bearish_data_stocktwits2 <- read_csv("social_sentiment_stocktwits_chginsentiment_bearish_03-16-2022.csv", 
+                                     show_col_types = FALSE)
 
 # binding both data for bullish and bearish tickers together
-data <- rbind(bullish_data_twitter, bullish_data_stocktwits, bullish_data_stocktwits2, bearish_data_twitter, bearish_data_twitter2, bearish_data_stocktwits, bearish_data_stocktwits2)
+data <- rbind(bullish_data_twitter, bullish_data_stocktwits, bullish_data_stocktwits2, 
+              bearish_data_twitter, bearish_data_twitter2, bearish_data_stocktwits, 
+              bearish_data_stocktwits2)
 
 data <- data %>%
   # filter out all dummy data
@@ -129,7 +138,7 @@ We firstly want to run a sanity check to make sure that the price level doesn't 
   
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata <- data %>%
-  filter(sentimentChangePercent < 500)
+  filter(sentimentChangePercent < 500, sentimentChangePercent > -1000)
 ggplot(plotdata, aes(y=sentimentChangePercent, x = priceChangePercent)) + 
   geom_point() + geom_smooth() + 
   labs(
@@ -143,7 +152,7 @@ We then want to examine the correlation of change in price and change in sentime
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata1 <- data %>%
-  filter(sentimentChangePercent < 500)
+  filter(sentimentChangePercent < 500, sentimentChangePercent > -1000)
 ggplot(plotdata1, aes(y=sentimentChangePercent, x = volumeChangePercent)) + 
   geom_point() + geom_smooth() + 
   labs(
@@ -210,7 +219,7 @@ From the plot above, we suppose that the market cap is also proportional to the 
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 plotdata3 <- data %>%
-  filter(marketCap < 5000000000, sentimentChangePercent < 500)
+  filter(marketCap < 5000000000, sentimentChangePercent < 500, sentimentChangePercent > -1000)
 ggplot(plotdata3, aes(x=marketCap, y = sentimentChangePercent)) + 
   geom_point() + geom_smooth() +
   labs(
@@ -224,9 +233,13 @@ We finally examine the correlation of market cap and change in sentiment. We had
 
 ## V. Finished Analysis  
 
+From all the analysis above, we found that there are some sorts of correlations between the sentiment score and price change, volume change, and market capacity. For other correlation plots that we thought would have some correlations, it turned out that there was not really any noticeable pattern. However, those correlations are enough to show that price and volumes change can infer change in sentiment scores of different stocks and cryptocurrencies. If we have more data, which can be from more social media platforms or from more dates, we can better prove the theory. Moreover, we might see a better and more specific trend if we plot the sentiment score of each ticker as a time-series graph. By doing that, we can better see the changes across different dates and the correlations between the sentiment score and price or volume.
+
 ## VI. Conclusion  
 
+In conclusion, it is clear that different social media platforms like Twitter, Reddit, and StockTwits can provide us with valuable trading information. Changes in price and volume of different tickers can infer changes in sentiment scores as there are correlations from the charts. Both prices and sentiments score can fluctuate depending on the market.  
+Regarding areas of improvement, we believe more real-time and frequently updated data of sentiment scores can show a clearer and stronger patterns for different correlations. We can also expect a better result if we can collect data from more diverse social media platforms.  
+
 ## VII. Appendix
-## Appendix
 ``` {r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
